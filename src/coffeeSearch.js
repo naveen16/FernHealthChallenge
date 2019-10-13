@@ -1,13 +1,23 @@
 const coffeeShops = require('./CoffeeShops');
+const roadAbbreviations = require('./RoadAbbreviations');
+const removeStopwords = require('./StopWords');
 const readline = require('readline');
 require('colors');
 
-const roadAbbreviations = new Set();
-roadAbbreviations.add('st');
-roadAbbreviations.add('rd');
-roadAbbreviations.add('ave');
-roadAbbreviations.add('ln');
-roadAbbreviations.add('blvd');
+const NAME_EXACT_MATCH = 5;
+const NAME_PARTIAL_MATCH = NAME_EXACT_MATCH/2;
+const NAME_SMALL_PARTIAL_MATCH = NAME_PARTIAL_MATCH - 1;
+
+const ZIP_MATCH = 5;
+const ZIP_PARTIAL_MATCH = ZIP_MATCH/2;
+const CITY_MATCH = 4;
+const CITY_PARTIAL_MATCH = CITY_MATCH/2;
+const STATE_MATCH = 3;
+const STATE_PARTIAL_MATCH = STATE_MATCH/2;
+const STREET_MATCH = 1;
+const STREET_PARTIAL_MATCH = STREET_MATCH/2;
+
+const DESCRIPTION_MATCH = 2;
 
 
 const processQuery = (query) => {
@@ -70,12 +80,12 @@ const calculateNameScore = (name, query) => {
         nameWords.forEach((nameWord) => {
             // 5 pts for exact word match and 2.5 points for partial match
             if (queryWord === nameWord) {
-                score += 5;
+                score += NAME_EXACT_MATCH;
             } else if (nameWord.indexOf(queryWord) >= 0) { // if queryWord is in nameWord
                 if (queryWord.length < (nameWord.length/2)) { // if the query word only matches a small portion of name give less points
-                    score += 1.5
+                    score += NAME_SMALL_PARTIAL_MATCH;
                 } else {
-                    score += 2.5;
+                    score += NAME_PARTIAL_MATCH;
                 }
             }
         });
@@ -100,24 +110,24 @@ const calculateAddressScore = (address, query) => {
     const queryWords = query.match(/[a-zA-Z0-9]+[']?[a-zA-Z0-9]*/g);
     queryWords.forEach((queryWord) => {
         if (queryWord === zip) {
-            score += 5;
-        } else if (zip.indexOf(queryWord) >= 0) {
-            score += 2.5
+            score += ZIP_MATCH;
+        } else if (zip.indexOf(queryWord) >= 0) { // partial zip match
+            score += ZIP_PARTIAL_MATCH
         }
         if (queryWord === city) {
-            score += 4;
-        } else if (city.indexOf(queryWord) >= 0) {
-            score += 2
+            score += CITY_MATCH;
+        } else if (city.indexOf(queryWord) >= 0) { // partial city match
+            score += CITY_PARTIAL_MATCH;
         }
         if (queryWord === state) {
-            score += 3;
-        } else if (state.indexOf(queryWord) >= 0) {
-            score += 1.5
+            score += STATE_MATCH;
+        } else if (state.indexOf(queryWord) >= 0) { // partial state match
+            score += STATE_PARTIAL_MATCH
         }
         if (queryWord === street) {
-            score += 1;
-        } else if (street.indexOf(queryWord) >= 0) {
-            score += .5
+            score += STREET_MATCH;
+        } else if (street.indexOf(queryWord) >= 0) { // partial street match
+            score += STREET_PARTIAL_MATCH;
         }
     });
     return score;
@@ -143,7 +153,7 @@ const getAddressComponents = (address) => {
 /*
     Address scoring algorithm:
     Match word: 2 pts
-    Match word partially: 1 pt
+    No points for partial match
 */
 const calculateDescriptionScore = (description, query) => {
     if (query.length === 0) {
@@ -160,26 +170,12 @@ const calculateDescriptionScore = (description, query) => {
         descriptionWords.forEach((descriptionWord) => {
             // 2 pts for exact word match and 0 points for partial match(description is long so partial match doesnt mean as much)
             if (queryWord === descriptionWord) {
-                score += 2;
+                score += DESCRIPTION_MATCH;
             }
         });
     });
     return score;
 }
-
-const stopwords = ['i','me','my','myself','we','our','ours','ourselves','you','your','yours','yourself','yourselves','he','him','his','himself','she','her','hers','herself','it','its','itself','they','them','their','theirs','themselves','what','which','who','whom','this','that','these','those','am','is','are','was','were','be','been','being','have','has','had','having','do','does','did','doing','a','an','the','and','but','if','or','because','as','until','while','of','at','by','for','with','about','against','between','into','through','during','before','after','above','below','to','from','up','down','in','out','on','off','over','under','again','further','then','once','here','there','when','where','why','how','all','any','both','each','few','more','most','other','some','such','no','nor','not','only','own','same','so','than','too','very','s','t','can','will','just','don','should','now']
-
-const removeStopwords = (str) => {
-    res = []
-    words = str.match(/[a-zA-Z0-9]+[']?[a-zA-Z0-9]*/g);
-    for(i=0;i<words.length;i++) {
-        if(!stopwords.includes(words[i])) {
-            res.push(words[i])
-        }
-    }
-    return(res.join(' '))
-}
-
 
 // prompt user for search query, keep asking until they exit with ctrl-c
 const main = () => {
