@@ -1,5 +1,16 @@
 # Fern Health Technical Challenge
 
+## Instructions to run
+```sh
+$ git clone https://github.com/naveen16/FernHealthChallenge.git
+$ cd FernHealthChallenge
+$ npm install
+$ cd src
+$ node coffeeSearch.js
+```
+
+You will be prompted to enter a search query. 
+
 ## Problem
     
 Write a search algorithm that ranks a list of coffee shops from best fit to worst fit based on how close the user
