@@ -42,7 +42,7 @@ The following are some optimizations we made to get better results:
 - Dont count stop words (the, and,..etc) for any of the data attributes
 - No partial match for description attribute
 - Reduced partial match score for name attribute
-- Added damping factor to each score addition. The idea is that the first word in the query is more important than the second, the second is more important than the third, and so on. So we apply a damping factor of 0.9 to each query word match. 1st query word is value*(0.9^0) = value*1, 2nd query word is value*(0.9^1) and so on.
+- Added damping factor to each score addition. The idea is that the first word in the query is more important than the second, the second is more important than the third, and so on. So we apply a damping factor of 0.9 to each query word match. 1st query word is value\*(0.9^0) = value*1, 2nd query word is value\*(0.9^1) and so on.
 
 #### Improvements
 
