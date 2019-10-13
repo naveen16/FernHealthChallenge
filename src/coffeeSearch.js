@@ -19,6 +19,16 @@ const STREET_PARTIAL_MATCH = STREET_MATCH/2;
 
 const DESCRIPTION_MATCH = 2;
 
+/* 
+    The earlier words in the query are more important than the later ones
+    so we will apply the following formula to the scores.
+    1st query word = score*1
+    2nd query word = score*0.9
+    3rd query word = score*0.9^2
+    ... and so on. This reduces the value of the query matches as the words go on.
+*/
+const DAMPING_FACTOR = 0.9;
+
 
 const processQuery = (query) => {
     // shallow copy of coffee shops array of objects
@@ -40,6 +50,7 @@ const sortCoffeeShops = (coffeeShopsWithScores) => {
 
 const printResults = (rankedCoffeeShops) => {
     console.log();
+    console.log(`Search Results\n`.black);
     rankedCoffeeShops.forEach((shop, i) => {
         console.log(`Rank ${i+1}`.black);
         console.log(`Name: ${shop.name}`.green);
@@ -70,22 +81,23 @@ const calculateNameScore = (name, query) => {
         return 0;
     }
     let score = 0;
-    // separate words and remove punctuation with this regex (leaves apostrophe and dashes)
+    // separate words and remove punctuation with this regex (leaves apostrophe)
     const nameWords = name.match(/[a-zA-Z0-9]+[']?[a-zA-Z0-9]*/g);
     const queryWords = query.match(/[a-zA-Z0-9]+[']?[a-zA-Z0-9]*/g);
-    queryWords.forEach((queryWord) => {
+    queryWords.forEach((queryWord, ind) => {
         if (roadAbbreviations.has(queryWord)) {
             return;
         }
         nameWords.forEach((nameWord) => {
             // 5 pts for exact word match and 2.5 points for partial match
+            // apply damping factor
             if (queryWord === nameWord) {
-                score += NAME_EXACT_MATCH;
+                score += NAME_EXACT_MATCH*Math.pow(DAMPING_FACTOR, ind);
             } else if (nameWord.indexOf(queryWord) >= 0) { // if queryWord is in nameWord
                 if (queryWord.length < (nameWord.length/2)) { // if the query word only matches a small portion of name give less points
-                    score += NAME_SMALL_PARTIAL_MATCH;
+                    score += NAME_SMALL_PARTIAL_MATCH*Math.pow(DAMPING_FACTOR, ind);
                 } else {
-                    score += NAME_PARTIAL_MATCH;
+                    score += NAME_PARTIAL_MATCH*Math.pow(DAMPING_FACTOR, ind);
                 }
             }
         });
@@ -106,28 +118,29 @@ const calculateAddressScore = (address, query) => {
     }
     const { street, city, state, zip } = getAddressComponents(address);
     let score = 0;
-    // separate words and remove punctuation with this regex (leaves apostrophe and dashes)
+    // separate words and remove punctuation with this regex (leaves apostrophe)
     const queryWords = query.match(/[a-zA-Z0-9]+[']?[a-zA-Z0-9]*/g);
-    queryWords.forEach((queryWord) => {
+    queryWords.forEach((queryWord, ind) => {
+        // accumulate score based on matches and apply damping factor to each
         if (queryWord === zip) {
-            score += ZIP_MATCH;
+            score += ZIP_MATCH*Math.pow(DAMPING_FACTOR, ind);
         } else if (zip.indexOf(queryWord) >= 0) { // partial zip match
-            score += ZIP_PARTIAL_MATCH
+            score += ZIP_PARTIAL_MATCH*Math.pow(DAMPING_FACTOR, ind);
         }
         if (queryWord === city) {
-            score += CITY_MATCH;
+            score += CITY_MATCH*Math.pow(DAMPING_FACTOR, ind);
         } else if (city.indexOf(queryWord) >= 0) { // partial city match
-            score += CITY_PARTIAL_MATCH;
+            score += CITY_PARTIAL_MATCH*Math.pow(DAMPING_FACTOR, ind);
         }
         if (queryWord === state) {
-            score += STATE_MATCH;
+            score += STATE_MATCH*Math.pow(DAMPING_FACTOR, ind);
         } else if (state.indexOf(queryWord) >= 0) { // partial state match
-            score += STATE_PARTIAL_MATCH
+            score += STATE_PARTIAL_MATCH*Math.pow(DAMPING_FACTOR, ind);
         }
         if (queryWord === street) {
-            score += STREET_MATCH;
+            score += STREET_MATCH*Math.pow(DAMPING_FACTOR, ind);
         } else if (street.indexOf(queryWord) >= 0) { // partial street match
-            score += STREET_PARTIAL_MATCH;
+            score += STREET_PARTIAL_MATCH*Math.pow(DAMPING_FACTOR, ind);
         }
     });
     return score;
@@ -160,17 +173,18 @@ const calculateDescriptionScore = (description, query) => {
         return 0;
     }
     let score = 0;
-    // separate words and remove punctuation with this regex (leaves apostrophe and dashes)
+    // separate words and remove punctuation with this regex (leaves apostrophe)
     const descriptionWords = description.match(/[a-zA-Z0-9]+[']?[a-zA-Z0-9]*/g);
     const queryWords = query.match(/[a-zA-Z0-9]+[']?[a-zA-Z0-9]*/g);
-    queryWords.forEach((queryWord) => {
+    queryWords.forEach((queryWord, ind) => {
         if (roadAbbreviations.has(queryWord)) {
             return;
         }
         descriptionWords.forEach((descriptionWord) => {
             // 2 pts for exact word match and 0 points for partial match(description is long so partial match doesnt mean as much)
+            // apply damping factor
             if (queryWord === descriptionWord) {
-                score += DESCRIPTION_MATCH;
+                score += DESCRIPTION_MATCH*Math.pow(DAMPING_FACTOR, ind);
             }
         });
     });
