@@ -43,6 +43,8 @@ category. After doing some testing it became evident that partial matches in the
 a better match to the coffee shop. 
 
 
+
+
 After processing the search query for these 3 data attributes we sum the score from all 3 to get a total score for each
 coffee shop. We take these scores and sort the shops in descending order with the highest score first and the lowest last.
 
