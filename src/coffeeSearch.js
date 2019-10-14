@@ -85,6 +85,7 @@ const calculateNameScore = (name, query) => {
     const nameWords = name.match(/[a-zA-Z0-9]+[']?[a-zA-Z0-9]*/g);
     const queryWords = query.match(/[a-zA-Z0-9]+[']?[a-zA-Z0-9]*/g);
     queryWords.forEach((queryWord, ind) => {
+        // dont count road abbreviations in name
         if (roadAbbreviations.has(queryWord)) {
             return;
         }
@@ -177,6 +178,7 @@ const calculateDescriptionScore = (description, query) => {
     const descriptionWords = description.match(/[a-zA-Z0-9]+[']?[a-zA-Z0-9]*/g);
     const queryWords = query.match(/[a-zA-Z0-9]+[']?[a-zA-Z0-9]*/g);
     queryWords.forEach((queryWord, ind) => {
+        // dont count road abbreviations in description
         if (roadAbbreviations.has(queryWord)) {
             return;
         }
