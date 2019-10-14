@@ -199,9 +199,14 @@ const main = () => {
     rl.prompt();
 
     rl.on('line', function(line) {
-        // ignore stop words
-        query = removeStopwords(line.toLowerCase());
-        processQuery(query);
+        // only process if they entered a valid query
+        if (line.length !== 0) {
+            // ignore stop words
+            let query = removeStopwords(line.toLowerCase());
+            processQuery(query);
+        } else {
+            console.log('Please enter a query.')
+        }
         rl.prompt();
     }).on('close',function(){
         console.log('...exiting');
